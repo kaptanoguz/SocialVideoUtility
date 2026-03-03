@@ -148,61 +148,55 @@ function setupNavigation() {
 }
 
 /**
- * Show a toast notification for download progress (doesn't switch views)
+ * Show a brief toast notification (auto-dismisses after delay)
  */
-function showDownloadToast(url) {
+function showToast(message, type = 'info', delayMs = 3000) {
     const toastContainer = elements.downloadToasts;
     if (!toastContainer) return null;
 
+    // Limit max toasts to 3
+    while (toastContainer.children.length >= 3) {
+        toastContainer.firstChild.remove();
+    }
+
     const toast = document.createElement('div');
     toast.className = 'download-toast';
+    if (type !== 'info') toast.classList.add(type);
     toast.innerHTML = `
         <div class="toast-header">
-            <span class="toast-status">⬇️ Başlatılıyor...</span>
+            <span class="toast-status">${message}</span>
             <button class="toast-close" title="Kapat">✕</button>
-        </div>
-        <div class="toast-url">${url}</div>
-        <div class="toast-progress">
-            <div class="toast-progress-fill" style="width: 0%"></div>
         </div>
     `;
 
     toast.querySelector('.toast-close').addEventListener('click', (e) => {
         e.stopPropagation();
-        toast.style.animation = 'toastSlideOut 0.3s ease forwards';
-        setTimeout(() => toast.remove(), 300);
+        dismissToast(toast);
     });
 
     toastContainer.appendChild(toast);
+
+    // Auto-dismiss
+    setTimeout(() => dismissToast(toast), delayMs);
     return toast;
 }
 
-/**
- * Auto-dismiss a toast after a delay
- */
-function autoDismissToast(toast, delayMs = 8000) {
-    setTimeout(() => {
-        if (toast && toast.parentNode) {
-            toast.style.animation = 'toastSlideOut 0.3s ease forwards';
-            setTimeout(() => toast.remove(), 300);
-        }
-    }, delayMs);
+function dismissToast(toast) {
+    if (toast && toast.parentNode) {
+        toast.style.animation = 'toastSlideOut 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+    }
 }
 
 async function startDownload(url) {
     // Check if already downloading this URL
     if (state.downloadingUrls.has(url)) {
-        const toast = showDownloadToast(url);
-        if (toast) {
-            toast.classList.add('duplicate');
-            toast.querySelector('.toast-status').textContent = '⚠️ Bu video zaten indiriliyor';
-            autoDismissToast(toast, 4000);
-        }
+        showToast('⚠️ Bu video zaten indiriliyor', 'duplicate', 3000);
         return;
     }
 
-    // Show toast notification (don't switch view!)
-    const toast = showDownloadToast(url);
+    // Brief start notification
+    showToast('⬇️ İndirme başladı', 'info', 3000);
 
     // Also add to downloads list for history
     const downloadsList = document.getElementById('downloads-list');
@@ -276,13 +270,7 @@ async function startDownload(url) {
             item.querySelector('.status').style.color = '#ffa500';
             item.querySelector('.progress-fill').style.width = '100%';
             item.querySelector('.progress-fill').style.background = '#ffa500';
-
-            if (toast) {
-                toast.classList.add('duplicate');
-                toast.querySelector('.toast-status').textContent = msg;
-                toast.querySelector('.toast-progress-fill').style.width = '100%';
-                autoDismissToast(toast, 6000);
-            }
+            showToast(msg, 'duplicate', 4000);
 
             if (data.filepath) {
                 fullFilePath = data.filepath;
@@ -297,7 +285,6 @@ async function startDownload(url) {
 
         if (data.status === 'started') {
             item.querySelector('.status').textContent = 'İndiriliyor... 0%';
-            if (toast) toast.querySelector('.toast-status').textContent = '⬇️ İndiriliyor... 0%';
 
             const pollInterval = setInterval(async () => {
                 try {
@@ -308,10 +295,6 @@ async function startDownload(url) {
                         const pct = statusData.progress || 0;
                         item.querySelector('.status').textContent = `İndiriliyor... ${pct}%`;
                         item.querySelector('.progress-fill').style.width = `${pct}%`;
-                        if (toast) {
-                            toast.querySelector('.toast-status').textContent = `⬇️ İndiriliyor... ${pct}%`;
-                            toast.querySelector('.toast-progress-fill').style.width = `${pct}%`;
-                        }
                     } else if (statusData.status === 'completed') {
                         clearInterval(pollInterval);
                         state.downloadingUrls.delete(url);
@@ -320,13 +303,7 @@ async function startDownload(url) {
                         item.querySelector('.status').style.color = '#00ba7c';
                         item.querySelector('.progress-fill').style.width = '100%';
                         item.querySelector('.progress-fill').style.background = '#00ba7c';
-
-                        if (toast) {
-                            toast.classList.add('completed');
-                            toast.querySelector('.toast-status').textContent = `✅ ${fname}`;
-                            toast.querySelector('.toast-progress-fill').style.width = '100%';
-                            autoDismissToast(toast, 8000);
-                        }
+                        showToast(`✅ ${fname}`, 'completed', 4000);
 
                         if (statusData.filename) {
                             const downloadDir = data.download_dir;
@@ -338,11 +315,6 @@ async function startDownload(url) {
                                     ipcRenderer.invoke('shell:open-file', fullFilePath);
                                 }
                             });
-                            if (toast) {
-                                toast.addEventListener('click', () => {
-                                    ipcRenderer.invoke('shell:open-file', fullFilePath);
-                                });
-                            }
                         }
                     } else if (statusData.status === 'failed') {
                         clearInterval(pollInterval);
@@ -351,13 +323,7 @@ async function startDownload(url) {
                         item.querySelector('.status').textContent = `❌ Hata: ${errMsg}`;
                         item.querySelector('.status').style.color = '#f4212e';
                         item.querySelector('.progress-fill').style.background = '#f4212e';
-
-                        if (toast) {
-                            toast.classList.add('failed');
-                            toast.querySelector('.toast-status').textContent = `❌ ${errMsg}`;
-                            toast.querySelector('.toast-progress-fill').style.background = '#f4212e';
-                            autoDismissToast(toast, 10000);
-                        }
+                        showToast(`❌ ${errMsg}`, 'failed', 5000);
                     }
                 } catch (e) {
                     // Polling error, keep trying
@@ -367,18 +333,12 @@ async function startDownload(url) {
             state.downloadingUrls.delete(url);
             item.querySelector('.status').textContent = 'Hata: ' + data.error;
             item.querySelector('.status').style.color = '#f4212e';
-            if (toast) {
-                toast.classList.add('failed');
-                toast.querySelector('.toast-status').textContent = `❌ ${data.error}`;
-            }
+            showToast(`❌ ${data.error}`, 'failed', 4000);
         }
     } catch (e) {
         state.downloadingUrls.delete(url);
         item.querySelector('.status').textContent = 'Bağlantı Hatası';
-        if (toast) {
-            toast.classList.add('failed');
-            toast.querySelector('.toast-status').textContent = '❌ Bağlantı Hatası';
-        }
+        showToast('❌ Bağlantı Hatası', 'failed', 4000);
     }
 }
 
@@ -386,44 +346,66 @@ async function startDownload(url) {
  * Bulk download - extract all video URLs from a user's profile page
  */
 async function startBulkDownload(profileUrl) {
-    const toast = showDownloadToast(profileUrl);
-    if (toast) {
-        toast.querySelector('.toast-status').textContent = '🔍 Videolar taranıyor...';
+    const webview = document.getElementById('x-webview');
+    if (!webview) {
+        showToast('❌ Webview bulunamadı', 'failed', 3000);
+        return;
     }
 
+    showToast('🔍 Sayfadaki videolar taranıyor...', 'info', 3000);
+
     try {
-        const response = await fetch(`${API_BASE}/bulk-extract`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: profileUrl, account: state.activeAccount })
-        });
-        const data = await response.json();
+        // Inject JS into webview to find all tweet URLs that contain video
+        const videoUrls = await webview.executeJavaScript(`
+            (function() {
+                const urls = new Set();
+                // Find all tweet articles
+                const articles = document.querySelectorAll('article[data-testid="tweet"]');
+                articles.forEach(article => {
+                    // Check if this tweet has video content
+                    const hasVideo = article.querySelector('video') ||
+                                     article.querySelector('[data-testid="videoPlayer"]') ||
+                                     article.querySelector('[data-testid="videoComponent"]') ||
+                                     article.querySelector('div[data-testid="tweetPhoto"] video');
 
-        if (data.urls && data.urls.length > 0) {
-            if (toast) {
-                toast.querySelector('.toast-status').textContent = `📦 ${data.urls.length} video bulundu, indirme başlıyor...`;
-                autoDismissToast(toast, 5000);
-            }
+                    if (hasVideo) {
+                        // Find the tweet URL
+                        const timeEl = article.querySelector('time');
+                        if (timeEl) {
+                            const link = timeEl.closest('a');
+                            if (link && link.href.includes('/status/')) {
+                                urls.add(link.href);
+                            }
+                        }
+                        // Fallback: find any /status/ link
+                        if (urls.size === 0 || !timeEl) {
+                            const links = article.querySelectorAll('a');
+                            links.forEach(a => {
+                                if (a.href.includes('/status/') && !a.href.includes('/photo/') && !a.href.includes('/analytics')) {
+                                    urls.add(a.href);
+                                }
+                            });
+                        }
+                    }
+                });
+                return Array.from(urls);
+            })();
+        `);
 
-            // Start downloads with slight delay between each
-            for (let i = 0; i < data.urls.length; i++) {
+        if (videoUrls && videoUrls.length > 0) {
+            showToast(`📦 ${videoUrls.length} video bulundu, indirme başlıyor...`, 'info', 4000);
+
+            for (let i = 0; i < videoUrls.length; i++) {
                 setTimeout(() => {
-                    startDownload(data.urls[i]);
-                }, i * 1500);  // 1.5 second delay between each
+                    startDownload(videoUrls[i]);
+                }, i * 1500);
             }
         } else {
-            if (toast) {
-                toast.classList.add('failed');
-                toast.querySelector('.toast-status').textContent = `❌ ${data.error || 'Bu sayfada video bulunamadı'}`;
-                autoDismissToast(toast, 6000);
-            }
+            showToast('❌ Bu sayfada video içeren gönderi bulunamadı. Aşağı kaydırarak daha fazla gönderi yükleyin.', 'failed', 5000);
         }
     } catch (e) {
-        if (toast) {
-            toast.classList.add('failed');
-            toast.querySelector('.toast-status').textContent = '❌ Bağlantı Hatası';
-            autoDismissToast(toast, 6000);
-        }
+        console.error('Bulk download error:', e);
+        showToast('❌ Sayfa taranamadı: ' + e.message, 'failed', 4000);
     }
 }
 

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Video Utility</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+
+        <!-- ========== SIDEBAR ========== -->
+        <aside class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" aria-hidden="true" fill="#fff" width="36" height="36">
+                    <path d="M8 5v14l11-7z"></path>
+                </svg>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-view="home">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                        <path
+                            d="M12 1.696L.622 8.807l1.06 1.696L3 9.679V19.5C3 20.881 4.119 22 5.5 22h13c1.381 0 2.5-1.119 2.5-2.5V9.679l1.318.824 1.06-1.696L12 1.696zM12 16.5c-1.933 0-3.5-1.567-3.5-3.5s1.567-3.5 3.5-3.5 3.5 1.567 3.5 3.5-1.567 3.5-3.5 3.5z">
+                        </path>
+                    </svg>
+                    <span>Anasayfa</span>
+                </a>
+                <a href="#" class="nav-item" data-view="downloads">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                        <path
+                            d="M12 2a1 1 0 011 1v10.586l3.293-3.293a1 1 0 111.414 1.414l-5 5a1 1 0 01-1.414 0l-5-5a1 1 0 111.414-1.414L11 13.586V3a1 1 0 011-1zM5 20a1 1 0 100 2h14a1 1 0 100-2H5z">
+                        </path>
+                    </svg>
+                    <span>İndirilenler</span>
+                </a>
+                <a href="#" class="nav-item" data-view="settings">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="24" height="24">
+                        <path
+                            d="M12 8.21c-2.09 0-3.79 1.7-3.79 3.79s1.7 3.79 3.79 3.79 3.79-1.7 3.79-3.79-1.7-3.79-3.79-3.79zm0 5.58c-.99 0-1.79-.8-1.79-1.79s.8-1.79 1.79-1.79 1.79.8 1.79 1.79-.8 1.79-1.79 1.79z">
+                        </path>
+                        <path
+                            d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46a.5.5 0 00-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65A.488.488 0 0014 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1a.5.5 0 00-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46a.5.5 0 00.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1a.5.5 0 00.61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65z">
+                        </path>
+                    </svg>
+                    <span>Ayarlar / Giriş</span>
+                </a>
+            </nav>
+
+            <button id="auth-status-btn" class="tweet-btn">
+                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" style="margin-right: 8px;">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z">
+                    </path>
+                </svg>
+                <span>Giriş Yap</span>
+            </button>
+
+            <div class="panel-toggle-btn left-toggle" id="left-toggle-btn">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </div>
+        </aside>
+
+        <!-- ========== MAIN CONTENT ========== -->
+        <main class="main-content">
+            <header class="header">
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <h2 id="page-title">Anasayfa</h2>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button id="header-bulk-btn" class="dl-btn" style="display: none;">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="3" width="7" height="7"></rect>
+                                <rect x="14" y="14" width="7" height="7"></rect>
+                                <rect x="3" y="14" width="7" height="7"></rect>
+                            </svg>
+                            Tümünü İndir
+                        </button>
+                        <button id="header-download-btn" class="dl-btn" style="display: none;">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Video İndir
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Home View (Webview) -->
+            <div id="home-view" class="view active" style="height: 100%;">
+                <webview id="x-webview" src="https://x.com/home" preload="./js/preload.js"
+                    style="flex: 1; width: 100%; height: 100%; border: none; border-radius: 0;" allowpopups></webview>
+            </div>
+
+            <!-- Downloads View -->
+            <div id="downloads-view" class="view">
+                <div class="view-header-actions"
+                    style="padding: 0 20px 15px 20px; display: flex; justify-content: flex-end;">
+                    <button id="open-downloads-folder-btn" class="btn-secondary"
+                        style="font-size: 13px; padding: 8px 16px;">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
+                            </path>
+                        </svg>
+                        Klasörü Aç
+                    </button>
+                </div>
+                <div class="downloads-list" id="downloads-list">
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor"
+                            stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
+                            style="margin-bottom: 16px; opacity: 0.3;">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <div>İndirilen medya yok</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings View -->
+            <div id="settings-view" class="view">
+                <div class="settings-container">
+                    <h3>Hesap Yönetimi</h3>
+                    <p>Tarayıcınızda sosyal medya hesabınıza giriş yapın, ardından buradan çerezleri içe aktarın.</p>
+
+                    <!-- Chrome Import Card -->
+                    <div class="settings-card">
+                        <h4>🔗 Chrome'dan Çerez İçe Aktar</h4>
+                        <p>Chrome'da X hesabınıza giriş yapın, sonra bir isim verip "İçe Aktar" butonuna basın.</p>
+                        <div class="import-row">
+                            <input id="import-account-name" type="text" placeholder="Hesap adı (ör: ana_hesap)"
+                                class="settings-input" />
+                            <button id="import-chrome-btn" class="tweet-btn"
+                                style="margin-top: 0; white-space: nowrap; padding: 12px 20px; font-size: 14px;">
+                                🔗 Chrome'dan İçe Aktar
+                            </button>
+                        </div>
+                        <div id="import-status" class="import-status"></div>
+                    </div>
+
+                    <!-- Webview Login Card -->
+                    <div class="settings-card">
+                        <h4>🌐 Webview Girişi</h4>
+                        <p>Alternatif olarak uygulama içinden de giriş yapabilirsiniz (bazı hesaplarda çalışmayabilir).
+                        </p>
+                        <div style="margin-top: 14px;">
+                            <button id="add-account-btn" class="btn-secondary">Webview ile Giriş Yap</button>
+                        </div>
+                    </div>
+
+                    <!-- Legal Warning -->
+                    <div class="legal-card">
+                        <h4>⚠️ Yasal Uyarı</h4>
+                        <p>
+                            Bu uygulama sadece kişisel kullanım ve eğitim amaçlıdır. Sosyal medya platformlarının
+                            kullanım koşullarını ihlal eden işlemlerden ve indirilen içeriklerin telif haklarından
+                            tamamen kullanıcı sorumludur. Geliştirici, uygulamanın yanlış kullanımından doğacak hiçbir
+                            sorundan mesul tutulamaz.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ========== DOWNLOAD TOAST NOTIFICATIONS ========== -->
+    <div id="download-toasts" class="download-toasts"></div>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>

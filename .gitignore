@@ -1,0 +1,11 @@
+node_modules/
+dist/
+backend/venv/
+*.deb
+*.AppImage
+*.exe
+.idea/
+.vscode/
+backend/__pycache__/
+backend/*.pyc
+*.log

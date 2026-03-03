@@ -1,0 +1,1040 @@
+/* ======================================================
+   Social Video Utility - Liquid Glass / Glassmorphism 2.0
+   2026 Design System
+   ====================================================== */
+
+/* --- Design Tokens --- */
+:root {
+    /* Background */
+    --bg-gradient-start: #0a0a14;
+    --bg-gradient-mid: #0f0f1a;
+    --bg-gradient-end: #1a1a2e;
+
+    /* Glass */
+    --glass-bg: rgba(255, 255, 255, 0.06);
+    --glass-bg-hover: rgba(255, 255, 255, 0.10);
+    --glass-bg-intense: rgba(255, 255, 255, 0.12);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --glass-border-hover: rgba(100, 180, 255, 0.25);
+    --glass-blur: blur(16px) saturate(180%);
+    --glass-blur-hover: blur(22px) saturate(200%);
+    --glass-radius: 22px;
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    --glass-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.45);
+    --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+
+    /* Typography */
+    --text-primary: #e7e9ea;
+    --text-secondary: #8899a6;
+    --text-muted: #555e68;
+
+    /* Accent Colors */
+    --accent-cyan: #00d4ff;
+    --accent-purple: #7b5eff;
+    --accent-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+    --like-color: #ff5c7a;
+    --like-color-bright: #ff8fa8;
+    --retweet-color: #00ff9d;
+    --success-color: #00ba7c;
+    --error-color: #f4212e;
+
+    /* Layout */
+    --sidebar-width: 260px;
+}
+
+/* --- Global Reset & Base --- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text-primary);
+    overflow: hidden;
+    min-height: 100vh;
+
+    /* Mesh gradient background */
+    background:
+        radial-gradient(ellipse at 15% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+        radial-gradient(ellipse at 85% 20%, rgba(168, 85, 247, 0.12) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(0, 212, 255, 0.06) 0%, transparent 60%),
+        linear-gradient(160deg, var(--bg-gradient-start) 0%, var(--bg-gradient-mid) 40%, var(--bg-gradient-end) 100%);
+    background-attachment: fixed;
+}
+
+/* Subtle noise overlay */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Very subtle noise via SVG data URI for texture */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* --- Glass Mixin (via utility class) --- */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--glass-radius);
+    box-shadow: var(--glass-shadow), var(--glass-inset);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.glass-panel:hover {
+    background: var(--glass-bg-hover);
+    backdrop-filter: var(--glass-blur-hover);
+    -webkit-backdrop-filter: var(--glass-blur-hover);
+    border-color: var(--glass-border-hover);
+    box-shadow: var(--glass-shadow-hover), var(--glass-inset);
+}
+
+/* --- App Layout --- */
+.app-container {
+    display: flex;
+    height: 100vh;
+    position: relative;
+    z-index: 1;
+}
+
+/* ========================
+   SIDEBAR
+   ======================== */
+.sidebar {
+    width: var(--sidebar-width);
+    padding: 20px 16px;
+    display: flex;
+    flex-direction: column;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border-right: 1px solid var(--glass-border);
+    box-shadow: var(--glass-inset), 4px 0 24px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+    z-index: 10;
+    transition: width 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding 0.4s;
+}
+
+.sidebar.collapsed {
+    width: 80px;
+    padding: 20px 8px;
+}
+
+.sidebar.collapsed .logo {
+    padding-bottom: 30px;
+}
+
+.sidebar.collapsed .nav-item span,
+.sidebar.collapsed .tweet-btn span {
+    display: none;
+}
+
+.sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: 14px;
+}
+
+.sidebar.collapsed .nav-item svg {
+    margin: 0;
+}
+
+.sidebar.collapsed .tweet-btn {
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+}
+
+.sidebar.collapsed .tweet-btn svg {
+    margin: 0;
+}
+
+/* Sidebar subtle glow accent */
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 70%, rgba(99, 102, 241, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+/* Logo */
+.logo {
+    padding: 8px 12px 24px 12px;
+    position: relative;
+}
+
+.logo svg {
+    filter: drop-shadow(0 0 8px rgba(0, 212, 255, 0.4));
+    transition: filter 0.3s ease;
+}
+
+.logo:hover svg {
+    filter: drop-shadow(0 0 16px rgba(0, 212, 255, 0.7));
+}
+
+/* Nav Menu */
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    transition: all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Shine effect on hover */
+.nav-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+    transition: left 0.5s ease;
+    pointer-events: none;
+}
+
+.nav-item:hover::before {
+    left: 100%;
+}
+
+.nav-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+    transform: translateX(4px);
+    text-shadow: 0 0 12px rgba(0, 212, 255, 0.3);
+}
+
+.nav-item:hover svg {
+    filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.4));
+}
+
+.nav-item.active {
+    font-weight: 700;
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.nav-item.active svg {
+    filter: drop-shadow(0 0 6px rgba(0, 212, 255, 0.5));
+}
+
+/* Primary Action Button (Login / Tweet) */
+.tweet-btn {
+    margin-top: 24px;
+    background: var(--accent-gradient);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+    letter-spacing: -0.01em;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+}
+
+.tweet-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transition: left 0.6s ease;
+}
+
+.tweet-btn:hover::before {
+    left: 100%;
+}
+
+.tweet-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(99, 102, 241, 0.45);
+}
+
+.tweet-btn:active {
+    transform: translateY(0);
+}
+
+/* ========================
+   MAIN CONTENT AREA
+   ======================== */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    position: relative;
+}
+
+/* Header */
+.header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    background: rgba(10, 10, 20, 0.6);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    z-index: 100;
+}
+
+.header h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--text-primary), var(--accent-cyan));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ========================
+   VIEWS
+   ======================== */
+.view {
+    display: none;
+    height: 100%;
+}
+
+.view.active {
+    display: block;
+}
+
+#home-view.active {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Panel Toggle Buttons */
+.panel-toggle-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 48px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 100;
+    color: var(--text-muted);
+    backdrop-filter: blur(8px);
+    transition: all 0.2s;
+}
+
+.panel-toggle-btn:hover {
+    background: var(--glass-bg-hover);
+    color: var(--accent-cyan);
+    border-color: var(--glass-border-hover);
+}
+
+.left-toggle {
+    right: -12px;
+}
+
+/* ========================
+   DOWNLOADS VIEW
+   ======================== */
+.downloads-list {
+    padding: 8px;
+}
+
+.download-item {
+    padding: 18px 20px;
+    margin-bottom: 10px;
+    border-radius: 18px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow), var(--glass-inset);
+    transition: all 0.3s ease;
+    animation: fadeInUp 0.4s ease-out;
+}
+
+.download-item:hover {
+    border-color: var(--glass-border-hover);
+    transform: translateY(-1px);
+}
+
+.download-item .status {
+    font-weight: 600;
+    color: var(--accent-cyan);
+    font-size: 14px;
+}
+
+.download-item .url {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.download-item .progress-bar {
+    border-radius: 4px !important;
+    overflow: hidden !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+}
+
+.download-item .progress-fill {
+    background: var(--accent-gradient) !important;
+    border-radius: 4px !important;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+    font-size: 15px;
+}
+
+/* ========================
+   SETTINGS VIEW
+   ======================== */
+.settings-container {
+    padding: 24px;
+    max-width: 640px;
+}
+
+.settings-container h3 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--text-primary), var(--accent-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.settings-container>p {
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+/* Settings Cards */
+.settings-card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--glass-radius);
+    padding: 22px;
+    margin-bottom: 16px;
+    box-shadow: var(--glass-shadow), var(--glass-inset);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.settings-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+    pointer-events: none;
+}
+
+.settings-card:hover {
+    border-color: var(--glass-border-hover);
+}
+
+.settings-card:hover::before {
+    animation: shineSlide 1.2s ease forwards;
+}
+
+.settings-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.settings-card p {
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* Settings Input */
+.settings-input {
+    flex: 1;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.settings-input::placeholder {
+    color: var(--text-muted);
+}
+
+.settings-input:focus {
+    border-color: var(--accent-cyan);
+    background: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.08);
+}
+
+/* Import Row */
+.import-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 14px;
+}
+
+/* Import Status */
+.import-status {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.03);
+    min-height: 20px;
+}
+
+/* Legal Warning Card */
+.legal-card {
+    background: rgba(255, 0, 0, 0.04);
+    border: 1px solid rgba(255, 92, 122, 0.15);
+    border-radius: var(--glass-radius);
+    padding: 18px 22px;
+    margin-top: 24px;
+    backdrop-filter: blur(10px);
+}
+
+.legal-card h4 {
+    color: var(--like-color);
+    margin: 0 0 8px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.legal-card p {
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+/* Accounts Section */
+.accounts-section h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.accounts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Account Card */
+.account-card {
+    display: flex;
+    align-items: center;
+    padding: 16px 18px;
+    border-radius: 16px;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow), var(--glass-inset);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    position: relative;
+    overflow: hidden;
+}
+
+.account-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.04), transparent);
+    pointer-events: none;
+}
+
+.account-card:hover {
+    transform: translateY(-2px) scale(1.01);
+    border-color: var(--glass-border-hover);
+}
+
+.account-card:hover::before {
+    animation: shineSlide 0.8s ease forwards;
+}
+
+.account-card.active {
+    border-color: rgba(99, 102, 241, 0.4);
+    background: rgba(99, 102, 241, 0.08);
+}
+
+/* ========================
+   DOWNLOAD BUTTON (Header)
+   ======================== */
+.dl-btn {
+    background: rgba(0, 212, 255, 0.08);
+    color: var(--accent-cyan);
+    border: 1px solid rgba(0, 212, 255, 0.25);
+    padding: 8px 18px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    font-family: inherit;
+    position: relative;
+    overflow: hidden;
+}
+
+.dl-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.08), transparent);
+    transition: left 0.5s ease;
+    pointer-events: none;
+}
+
+.dl-btn:hover::before {
+    left: 100%;
+}
+
+.dl-btn:hover {
+    background: rgba(0, 212, 255, 0.15);
+    border-color: rgba(0, 212, 255, 0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 212, 255, 0.15);
+}
+
+.dl-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.dl-btn svg {
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+/* ========================
+   SECONDARY BUTTON (Webview Login, etc.)
+   ======================== */
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.10);
+    border-color: var(--glass-border-hover);
+    transform: translateY(-1px);
+}
+
+/* ========================
+   LOADING / SPINNER
+   ======================== */
+.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    color: var(--text-muted);
+}
+
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(0, 212, 255, 0.15);
+    border-radius: 50%;
+    border-top-color: var(--accent-cyan);
+    animation: spin 0.9s ease-in-out infinite;
+    margin-bottom: 15px;
+}
+
+/* ========================
+   TWEET CARD (for Accounts list rendering)
+   ======================== */
+.tweet-card {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    padding: 16px;
+    display: flex;
+    gap: 14px;
+    transition: all 0.3s ease;
+    border-radius: 16px;
+}
+
+.tweet-card:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.tweet-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+}
+
+.tweet-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.tweet-content {
+    flex: 1;
+}
+
+.tweet-header {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.user-name {
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+}
+
+.user-handle,
+.tweet-time {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+
+.tweet-text {
+    margin-bottom: 10px;
+    line-height: 1.5;
+    font-size: 15px;
+}
+
+/* ========================
+   CUSTOM SCROLLBAR
+   ======================== */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* ========================
+   ANIMATIONS
+   ======================== */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes shineSlide {
+    from {
+        left: -100%;
+    }
+
+    to {
+        left: 100%;
+    }
+}
+
+@keyframes pulseGlow {
+    0% {
+        box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.3);
+    }
+
+    70% {
+        box-shadow: 0 0 0 8px rgba(0, 212, 255, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(0, 212, 255, 0);
+    }
+}
+
+/* ========================
+   RESPONSIVE
+   ======================== */
+/* ========================
+   DOWNLOAD TOAST NOTIFICATIONS
+   ======================== */
+.download-toasts {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 10px;
+    max-height: 50vh;
+    overflow-y: auto;
+    pointer-events: none;
+}
+
+.download-toast {
+    pointer-events: auto;
+    background: rgba(15, 15, 26, 0.92);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 14px 18px;
+    min-width: 320px;
+    max-width: 420px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), var(--glass-inset);
+    animation: toastSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.download-toast:hover {
+    border-color: var(--glass-border-hover);
+    transform: translateX(-4px);
+}
+
+.download-toast .toast-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.download-toast .toast-status {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--accent-cyan);
+}
+
+.download-toast .toast-close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 16px;
+    padding: 2px 6px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.download-toast .toast-close:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+.download-toast .toast-url {
+    font-size: 11px;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 8px;
+}
+
+.download-toast .toast-progress {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.download-toast .toast-progress-fill {
+    height: 100%;
+    background: var(--accent-gradient);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+.download-toast.completed {
+    border-color: rgba(0, 186, 124, 0.3);
+}
+
+.download-toast.completed .toast-status {
+    color: var(--success-color);
+}
+
+.download-toast.completed .toast-progress-fill {
+    background: var(--success-color);
+}
+
+.download-toast.failed {
+    border-color: rgba(244, 33, 46, 0.3);
+}
+
+.download-toast.failed .toast-status {
+    color: var(--error-color);
+}
+
+.download-toast.failed .toast-progress-fill {
+    background: var(--error-color);
+}
+
+.download-toast.duplicate {
+    border-color: rgba(255, 165, 0, 0.3);
+}
+
+.download-toast.duplicate .toast-status {
+    color: #ffa500;
+}
+
+@keyframes toastSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(60px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+@keyframes toastSlideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(60px) scale(0.95);
+    }
+}
+
+/* Bulk Download Badge */
+.bulk-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent-gradient);
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    padding: 0 6px;
+    margin-left: 6px;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 68px;
+        padding: 16px 8px;
+    }
+
+    .sidebar .nav-item span,
+    .sidebar .tweet-btn,
+    .sidebar .logo svg {
+        display: none;
+    }
+
+    .sidebar .nav-item {
+        justify-content: center;
+        padding: 14px;
+    }
+
+    .sidebar .nav-item svg {
+        margin: 0;
+    }
+}

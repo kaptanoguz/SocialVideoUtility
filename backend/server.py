@@ -126,69 +126,6 @@ def check_duplicate():
     return jsonify(result)
 
 
-@app.route('/api/bulk-extract', methods=['POST'])
-def bulk_extract():
-    """Extract all video URLs from a user's profile/media page."""
-    data = request.json
-    if not data or 'url' not in data:
-        return jsonify({'error': 'URL required', 'urls': []}), 400
-
-    profile_url = data['url']
-    account = data.get('account')
-
-    try:
-        ydl_opts = {
-            'quiet': True,
-            'no_warnings': True,
-            'extract_flat': 'in_playlist',
-            'simulate': True,
-            'skip_download': True,
-            'playlistend': 50,  # Limit to 50 videos max
-        }
-
-        cookie_opts = get_cookie_opts(account)
-        ydl_opts.update(cookie_opts)
-
-        # If not already a /media URL, try /media first for videos
-        if '/media' not in profile_url:
-            media_url = profile_url.rstrip('/') + '/media'
-        else:
-            media_url = profile_url
-
-        urls = []
-
-        def try_extract(target_url):
-            extracted = []
-            try:
-                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                    result = ydl.extract_info(target_url, download=False)
-                    if result:
-                        if 'entries' in result:
-                            for entry in result['entries']:
-                                if entry and entry.get('url'):
-                                    extracted.append(entry['url'])
-                                elif entry and entry.get('webpage_url'):
-                                    extracted.append(entry['webpage_url'])
-                        elif result.get('webpage_url'):
-                            extracted.append(result['webpage_url'])
-            except Exception as e:
-                print(f"Bulk extract from {target_url}: {e}")
-            return extracted
-
-        # Try media URL first
-        urls = try_extract(media_url)
-
-        # If no results, try the original profile URL
-        if not urls and media_url != profile_url:
-            urls = try_extract(profile_url)
-
-        if urls:
-            return jsonify({'urls': urls, 'count': len(urls)})
-        else:
-            return jsonify({'error': 'Bu sayfada indirilebilir video bulunamadı', 'urls': []})
-
-    except Exception as e:
-        return jsonify({'error': str(e), 'urls': []}), 500
 
 
 @app.route('/api/download', methods=['POST'])

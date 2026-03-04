@@ -9,7 +9,13 @@ A **professional desktop application** for browsing, managing, and downloading s
 
 ---
 
-## 📸 Screenshots
+## 📸 Screenshots & Demo
+
+<p align="center">
+  <img src="screenshots/demo.gif" alt="Demo Animation" width="80%">
+  <br><em>🎬 Quick Demo — Browse, Download, Manage</em>
+</p>
+
 
 <p align="center">
   <img src="screenshots/main-view.png" alt="Main Feed View" width="80%">

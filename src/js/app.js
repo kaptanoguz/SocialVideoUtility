@@ -28,15 +28,51 @@ const state = {
 };
 
 function init() {
+    // Initialize i18n
+    loadLanguage();
+    applyTranslations();
+
     setupNavigation();
     setupAuth();
     setupPanels();
     setupDownloads();
+    setupLanguage();
 
     // Listen for cookies-loaded event from main process → destroy + recreate webview
     ipcRenderer.on('cookies-loaded', (event, accountName, partitionName) => {
         console.log('Cookies loaded, recreating webview for:', accountName, 'partition:', partitionName);
         recreateWebview(partitionName);
+    });
+}
+
+function setupLanguage() {
+    // Settings dropdown
+    const langSelect = document.getElementById('language-select');
+    if (langSelect) {
+        langSelect.value = currentLang;
+        langSelect.addEventListener('change', (e) => {
+            setLanguage(e.target.value);
+            updateFlagActiveState();
+        });
+    }
+
+    // Sidebar flag buttons
+    const flagBtns = document.querySelectorAll('.lang-flag');
+    flagBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            setLanguage(btn.dataset.lang);
+            updateFlagActiveState();
+            // Also sync settings dropdown
+            if (langSelect) langSelect.value = currentLang;
+        });
+    });
+
+    updateFlagActiveState();
+}
+
+function updateFlagActiveState() {
+    document.querySelectorAll('.lang-flag').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.lang === currentLang);
     });
 }
 
@@ -191,12 +227,12 @@ function dismissToast(toast) {
 async function startDownload(url) {
     // Check if already downloading this URL
     if (state.downloadingUrls.has(url)) {
-        showToast('⚠️ Bu video zaten indiriliyor', 'duplicate', 3000);
+        showToast(t('toastAlreadyDownloading'), 'duplicate', 3000);
         return;
     }
 
     // Brief start notification
-    showToast('⬇️ İndirme başladı', 'info', 3000);
+    showToast(t('toastDownloadStarted'), 'info', 3000);
 
     // Also add to downloads list for history
     const downloadsList = document.getElementById('downloads-list');
@@ -204,7 +240,7 @@ async function startDownload(url) {
     item.className = 'download-item';
     item.style.cursor = 'default';
     item.innerHTML = `
-        <div class="status">Başlatılıyor...</div>
+        <div class="status">${t('statusDownloading')}</div>
         <div class="url">${url}</div>
         <div class="progress-bar" style="width: 100%; height: 4px; background: rgba(255,255,255,0.06); border-radius: 4px; margin-top: 10px; overflow: hidden;">
             <div class="progress-fill" style="width: 0%; height: 100%; background: linear-gradient(135deg, #6366f1, #a855f7); border-radius: 4px; transition: width 0.3s;"></div>
@@ -230,7 +266,7 @@ async function startDownload(url) {
 
         if (checkData.duplicate) {
             state.downloadingUrls.delete(url);
-            const msg = `⚠️ Zaten mevcut: ${checkData.filename}`;
+            const msg = `${t('toastDuplicate')} ${checkData.filename}`;
             item.querySelector('.status').textContent = msg;
             item.querySelector('.status').style.color = '#ffa500';
             item.querySelector('.progress-fill').style.width = '100%';
@@ -247,7 +283,7 @@ async function startDownload(url) {
             if (checkData.filepath) {
                 fullFilePath = checkData.filepath;
                 item.style.cursor = 'pointer';
-                item.title = 'Mevcut videoyu açmak için tıkla';
+                item.title = t('clickToOpen');
                 item.addEventListener('click', () => {
                     ipcRenderer.invoke('shell:open-file', fullFilePath);
                 });
@@ -265,7 +301,7 @@ async function startDownload(url) {
         if (data.status === 'duplicate') {
             // Server-side duplicate detected
             state.downloadingUrls.delete(url);
-            const msg = `⚠️ Zaten mevcut: ${data.filename}`;
+            const msg = `${t('toastDuplicate')} ${data.filename}`;
             item.querySelector('.status').textContent = msg;
             item.querySelector('.status').style.color = '#ffa500';
             item.querySelector('.progress-fill').style.width = '100%';
@@ -275,7 +311,7 @@ async function startDownload(url) {
             if (data.filepath) {
                 fullFilePath = data.filepath;
                 item.style.cursor = 'pointer';
-                item.title = 'Mevcut videoyu açmak için tıkla';
+                item.title = t('clickToOpen');
                 item.addEventListener('click', () => {
                     ipcRenderer.invoke('shell:open-file', fullFilePath);
                 });
@@ -284,7 +320,7 @@ async function startDownload(url) {
         }
 
         if (data.status === 'started') {
-            item.querySelector('.status').textContent = 'İndiriliyor... 0%';
+            item.querySelector('.status').textContent = `${t('statusDownloading')} 0%`;
 
             const pollInterval = setInterval(async () => {
                 try {
@@ -293,13 +329,13 @@ async function startDownload(url) {
 
                     if (statusData.status === 'downloading') {
                         const pct = statusData.progress || 0;
-                        item.querySelector('.status').textContent = `İndiriliyor... ${pct}%`;
+                        item.querySelector('.status').textContent = `${t('statusDownloading')} ${pct}%`;
                         item.querySelector('.progress-fill').style.width = `${pct}%`;
                     } else if (statusData.status === 'completed') {
                         clearInterval(pollInterval);
                         state.downloadingUrls.delete(url);
                         const fname = statusData.filename || 'video.mp4';
-                        item.querySelector('.status').textContent = `✅ Tamamlandı: ${fname}`;
+                        item.querySelector('.status').textContent = `${t('toastCompleted')} ${t('statusCompleted')} ${fname}`;
                         item.querySelector('.status').style.color = '#00ba7c';
                         item.querySelector('.progress-fill').style.width = '100%';
                         item.querySelector('.progress-fill').style.background = '#00ba7c';
@@ -309,7 +345,7 @@ async function startDownload(url) {
                             const downloadDir = data.download_dir;
                             fullFilePath = `${downloadDir}/${statusData.filename}`;
                             item.style.cursor = 'pointer';
-                            item.title = 'Videoyu oynatmak için tıkla';
+                            item.title = t('clickToPlay');
                             item.addEventListener('click', () => {
                                 if (fullFilePath) {
                                     ipcRenderer.invoke('shell:open-file', fullFilePath);
@@ -320,10 +356,10 @@ async function startDownload(url) {
                         clearInterval(pollInterval);
                         state.downloadingUrls.delete(url);
                         const errMsg = statusData.error || 'Bilinmeyen hata';
-                        item.querySelector('.status').textContent = `❌ Hata: ${errMsg}`;
+                        item.querySelector('.status').textContent = `${t('toastError')} ${errMsg}`;
                         item.querySelector('.status').style.color = '#f4212e';
                         item.querySelector('.progress-fill').style.background = '#f4212e';
-                        showToast(`❌ ${errMsg}`, 'failed', 5000);
+                        showToast(`${t('toastError')} ${errMsg}`, 'failed', 5000);
                     }
                 } catch (e) {
                     // Polling error, keep trying
@@ -331,14 +367,14 @@ async function startDownload(url) {
             }, 2000);
         } else {
             state.downloadingUrls.delete(url);
-            item.querySelector('.status').textContent = 'Hata: ' + data.error;
+            item.querySelector('.status').textContent = `${t('toastError')} ${data.error}`;
             item.querySelector('.status').style.color = '#f4212e';
-            showToast(`❌ ${data.error}`, 'failed', 4000);
+            showToast(`${t('toastError')} ${data.error}`, 'failed', 4000);
         }
     } catch (e) {
         state.downloadingUrls.delete(url);
-        item.querySelector('.status').textContent = 'Bağlantı Hatası';
-        showToast('❌ Bağlantı Hatası', 'failed', 4000);
+        item.querySelector('.status').textContent = t('toastConnectionError');
+        showToast(t('toastConnectionError'), 'failed', 4000);
     }
 }
 
@@ -348,11 +384,11 @@ async function startDownload(url) {
 async function startBulkDownload(profileUrl) {
     const webview = document.getElementById('x-webview');
     if (!webview) {
-        showToast('❌ Webview bulunamadı', 'failed', 3000);
+        showToast(t('toastError'), 'failed', 3000);
         return;
     }
 
-    showToast('🔍 Sayfadaki videolar taranıyor...', 'info', 3000);
+    showToast(t('toastScanning'), 'info', 3000);
 
     try {
         // Inject JS into webview to find all tweet URLs that contain video
@@ -393,7 +429,7 @@ async function startBulkDownload(profileUrl) {
         `);
 
         if (videoUrls && videoUrls.length > 0) {
-            showToast(`📦 ${videoUrls.length} video bulundu, indirme başlıyor...`, 'info', 4000);
+            showToast(`📦 ${videoUrls.length} ${t('toastVideosFound')}`, 'info', 4000);
 
             for (let i = 0; i < videoUrls.length; i++) {
                 setTimeout(() => {
@@ -401,11 +437,11 @@ async function startBulkDownload(profileUrl) {
                 }, i * 1500);
             }
         } else {
-            showToast('❌ Bu sayfada video içeren gönderi bulunamadı. Aşağı kaydırarak daha fazla gönderi yükleyin.', 'failed', 5000);
+            showToast(t('toastNoVideos'), 'failed', 5000);
         }
     } catch (e) {
         console.error('Bulk download error:', e);
-        showToast('❌ Sayfa taranamadı: ' + e.message, 'failed', 4000);
+        showToast(`${t('toastScanError')} ${e.message}`, 'failed', 4000);
     }
 }
 
@@ -448,12 +484,12 @@ function switchView(viewName) {
     });
 
     // Update Title
-    const titles = {
-        'home': 'Anasayfa',
-        'downloads': 'İndirilenler',
-        'settings': 'Ayarlar'
+    const titleKeys = {
+        'home': 'headerTitle',
+        'downloads': 'downloadsTitle',
+        'settings': 'settingsTitle'
     };
-    elements.pageTitle.textContent = titles[viewName];
+    elements.pageTitle.textContent = t(titleKeys[viewName]);
     state.currentView = viewName;
 }
 
@@ -476,14 +512,12 @@ function setupAuth() {
         elements.importChromeBtn.addEventListener('click', async () => {
             const accountName = (elements.importAccountName.value || '').trim();
             if (!accountName) {
-                elements.importStatus.textContent = '⚠️ Lütfen bir hesap adı girin.';
+                elements.importStatus.textContent = `⚠️ ${t('enterAccountName')}`;
                 elements.importStatus.style.color = '#f4212e';
                 return;
             }
 
             elements.importChromeBtn.disabled = true;
-            elements.importChromeBtn.textContent = '⏳ İçe aktarılıyor...';
-            elements.importStatus.textContent = 'Chrome\'dan çerezler okunuyor...';
             elements.importStatus.style.color = '#71767b';
 
             try {
@@ -495,7 +529,7 @@ function setupAuth() {
                 const data = await res.json();
 
                 if (data.success) {
-                    elements.importStatus.textContent = `✅ Başarılı! ${data.cookie_count} X.com çerezi yüklendi. Anasayfaya yönlendiriliyorsunuz...`;
+                    elements.importStatus.textContent = `✅ ${data.cookie_count} ${t('cookieSuccess')}`;
                     elements.importStatus.style.color = '#00ba7c';
                     state.activeAccount = accountName;
                     elements.importAccountName.value = '';
@@ -508,15 +542,14 @@ function setupAuth() {
 
                     setTimeout(() => switchView('home'), 1500);
                 } else {
-                    elements.importStatus.textContent = `❌ Hata: ${data.error}`;
+                    elements.importStatus.textContent = `${t('cookieFail')} ${data.error}`;
                     elements.importStatus.style.color = '#f4212e';
                 }
             } catch (e) {
-                elements.importStatus.textContent = `❌ Bağlantı hatası: ${e.message}`;
+                elements.importStatus.textContent = `${t('toastConnectionError')}: ${e.message}`;
                 elements.importStatus.style.color = '#f4212e';
             } finally {
                 elements.importChromeBtn.disabled = false;
-                elements.importChromeBtn.textContent = '🔗 Chrome\'dan İçe Aktar';
             }
         });
     }

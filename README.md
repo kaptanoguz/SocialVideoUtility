@@ -9,6 +9,25 @@ A **professional desktop application** for browsing, managing, and downloading s
 
 ---
 
+## 📸 Screenshots
+
+<p align="center">
+  <img src="screenshots/main-view.png" alt="Main Feed View" width="80%">
+  <br><em>📺 Main Feed — Browse & download videos with one click</em>
+</p>
+
+<p align="center">
+  <img src="screenshots/downloads-view.png" alt="Downloads View" width="80%">
+  <br><em>📥 Downloads — Track all your downloaded videos</em>
+</p>
+
+<p align="center">
+  <img src="screenshots/settings-view.png" alt="Settings View" width="80%">
+  <br><em>⚙️ Settings — Import cookies, manage accounts</em>
+</p>
+
+---
+
 ## ✨ Features
 
 | Feature | Description |
